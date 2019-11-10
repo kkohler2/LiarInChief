@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+             x:Class="LiarInChief.Views.AboutPage"
+             xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:vm="clr-namespace:LiarInChief.ViewModels"
+             xmlns:models="clr-namespace:LiarInChief.Models;assembly=LiarInChief"
+             Title="{Binding Title}">
+
+    <ContentPage.BindingContext>
+        <vm:AboutViewModel />
+    </ContentPage.BindingContext>
+    
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#2196F3</Color>
+            <Color x:Key="Accent">#96d1ff</Color>
+            <Color x:Key="LightTextColor">#999999</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout
+            Padding="10"
+            Orientation="Vertical"
+            Spacing="10">
+            <Image
+                Margin="-10,-10,-10,0"
+                Aspect="AspectFill"
+                HeightRequest="200"
+                Source="trump_truck.png" />
+            <Label
+                Margin="0,16"
+                LineBreakMode="WordWrap"
+                FontSize="Body"
+                Text="My name is Donald J. Trump. I'm a liar, cheater, failed businessman and a corrupt President of the United States. I've been banned from running charities.  I have stiffed countless contractors for work.  I hire foreigners over Americans to work at my properties and I'm under investigation for possible Impeachment." />
+            <StackLayout
+                BindableLayout.ItemsSource="{Binding SocialItems}"
+                HorizontalOptions="CenterAndExpand"
+                Orientation="Horizontal"
+                Spacing="5">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:SocialItem">
+                        <Button
+                            Command="{Binding OpenUrlCommand}"
+                            Style="{StaticResource MaterialButton}"
+                            Text="{Binding Icon}" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>    
+</ContentPage>
