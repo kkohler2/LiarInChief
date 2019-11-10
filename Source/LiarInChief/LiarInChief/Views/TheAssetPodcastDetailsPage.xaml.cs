@@ -2,18 +2,18 @@
 using LiarInChief.ViewModels;
 using LiarInChief.Views;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace LiarInChief.Views
 {
-    public partial class PodcastDetailsPage : ContentPage
+    public partial class TheAssetPodcastDetailsPage : ContentPage
     {
-        PodcastDetailsViewModel VM => (PodcastDetailsViewModel)BindingContext;
-        public PodcastDetailsPage()
+        public TheAssetPodcastDetailsViewModel VM => (TheAssetPodcastDetailsViewModel)BindingContext;
+
+        public TheAssetPodcastDetailsPage()
         {
-            BindingContext = new PodcastDetailsViewModel();
+            BindingContext = new TheAssetPodcastDetailsViewModel();
             InitializeComponent();
         }
 
@@ -24,7 +24,7 @@ namespace LiarInChief.Views
                 VM.LoadEpisodesCommand.Execute(null);
         }
 
-        void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
+        private void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
         {
             ((ListView)sender).SelectedItem = null;
         }
@@ -35,15 +35,13 @@ namespace LiarInChief.Views
             if (!(listView?.SelectedItem is PodcastEpisode episode))
                 return;
 
-            await Navigation.PushModalAsync(new PodcastEpisodePage(episode, VM.Podcast.Title));
-
+            await Navigation.PushModalAsync(new TheAssetPodcastEpisodePage(episode, VM.Podcast.Title));
 
             listView.SelectedItem = null;
         }
 
-        void ListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
+        private void ListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
         {
-
             if(e.ItemIndex == 0 && StackLayoutInfo.IsVisible)
             {
                 StackLayoutInfo.FadeTo(0).ContinueWith((t) =>

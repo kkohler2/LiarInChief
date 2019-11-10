@@ -1,22 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="LiarInChief.Views.PodcastDetailsPage"
+    x:Class="LiarInChief.Views.TrumpIncPodcastDetailsPage"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-    xmlns:helpers="clr-namespace:LiarInChief.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:pancake="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
+    xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:models="clr-namespace:LiarInChief.Models"
     xmlns:viewmodels="clr-namespace:LiarInChief.ViewModels"
-    Shell.NavBarIsVisible="{OnPlatform iOS=true, Default=false}"
+    xmlns:pancake="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
     xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+    Shell.NavBarIsVisible="{OnPlatform iOS=true, Default=false}"
     ios:Page.UseSafeArea="True"
     mc:Ignorable="d"
     BackgroundColor="{StaticResource WindowBackgroundColor}"
-    x:DataType="viewmodels:PodcastDetailsViewModel">
+    x:DataType="viewmodels:TrumpIncPodcastDetailsViewModel">
     <d:ContentPage.BindingContext>
-        <viewmodels:PodcastDetailsViewModel />
+        <viewmodels:TrumpIncPodcastDetailsViewModel />
     </d:ContentPage.BindingContext>
     <ContentPage.Content>
         <Grid>

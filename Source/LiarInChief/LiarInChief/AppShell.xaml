@@ -41,7 +41,10 @@
             <ShellContent ContentTemplate="{DataTemplate local:FakeTwitterPage}" />
         </Tab>
         <Tab Title="The Asset" Icon="ic_podcast.png" Shell.NavBarIsVisible="False">
-            <ShellContent ContentTemplate="{DataTemplate local:PodcastDetailsPage}" />
+            <ShellContent ContentTemplate="{DataTemplate local:TheAssetPodcastDetailsPage}" />
+        </Tab>
+        <Tab Title="Trump, Inc." Icon="ic_podcast.png" Shell.NavBarIsVisible="False">
+            <ShellContent ContentTemplate="{DataTemplate local:TrumpIncPodcastDetailsPage}" />
         </Tab>
     </TabBar>
 </Shell>

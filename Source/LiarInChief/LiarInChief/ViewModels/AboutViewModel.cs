@@ -26,6 +26,11 @@ namespace LiarInChief.ViewModels
                 {
                     Icon = IconConstants.RssBox,
                     Url = "https://theassetpodcast.org/"
+                },
+                new SocialItem
+                {
+                    Icon = IconConstants.RssBox,
+                    Url = "https://www.wnycstudios.org/podcasts/trumpinc"
                 }
             };
         }

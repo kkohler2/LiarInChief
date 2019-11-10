@@ -9,24 +9,26 @@ using Xamarin.Forms;
 
 namespace LiarInChief.ViewModels
 {
-    public class PodcastDetailsViewModel : ViewModelBase
+    public class PodcastDetailsBaseViewModel : ViewModelBase
     {
         public ICommand SubscribeCommand { get; set; }
         public ICommand LoadEpisodesCommand { get; set; }
         public Podcast Podcast { get; set; }
         public List<PodcastEpisode> AllEpisodes { get; set; }
         public ObservableRangeCollection<PodcastEpisode> Episodes { get; set; }
+        private readonly bool _theAsset;
 
-        public PodcastDetailsViewModel()
+        public PodcastDetailsBaseViewModel(bool theAsset)
         {
             SubscribeCommand = new Command(async () => await ExecuteSubscribeCommand());
             LoadEpisodesCommand = new Command(async () => await ExecuteLoadEpisodesCommand());
             Episodes = new ObservableRangeCollection<PodcastEpisode>();
-            Podcast = DataService.GetPodcast();
+            _theAsset = theAsset;
+            Podcast = theAsset ? DataService.GetTheAssetPodcast() : DataService.GetTrumpIncPodcast();
             AllEpisodes = new List<PodcastEpisode>();
         }
 
-        async Task ExecuteSubscribeCommand()
+        public async Task ExecuteSubscribeCommand()
         {
             var services = Podcast
                 .PodcastServices
@@ -35,14 +37,14 @@ namespace LiarInChief.ViewModels
 
             var result = await CurrentPage.DisplayActionSheet("Subscribe on:", "Cancel", null,services.ToArray());
 
-            var service = Podcast.PodcastServices.FirstOrDefault(s => s.Title == result);
+            var service = Podcast.PodcastServices.Find(s => s.Title == result);
             if (service == null)
                 return;
 
             await OpenBrowserAsync(service.Url);
         }
 
-        async Task ExecuteLoadEpisodesCommand()
+        public async Task ExecuteLoadEpisodesCommand()
         {
             if (IsBusy)
                 return;
@@ -53,7 +55,7 @@ namespace LiarInChief.ViewModels
 #if DEBUG
                 await Task.Delay(1000);
 #endif
-                var episodes = await DataService.GetPodcastEpisodesAsync(Podcast.Id, false);
+                var episodes = await DataService.GetPodcastEpisodesAsync(Podcast, _theAsset, false);
 
                 AllEpisodes.Clear();
                 Episodes.Clear();
@@ -71,7 +73,8 @@ namespace LiarInChief.ViewModels
             }
         }
 
-        const int chunk = 50;
+        private const int chunk = 50;
+
         public void LoadMoreEpisodes()
         {
             if (!CanLoadMore)

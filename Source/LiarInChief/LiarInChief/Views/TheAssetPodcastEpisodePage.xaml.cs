@@ -7,9 +7,9 @@ using Xamarin.Forms.Xaml;
 
 namespace LiarInChief.Views
 {
-    public partial class PodcastEpisodePage : ContentPage
+    public partial class TheAssetPodcastEpisodePage : ContentPage
     {
-        public PodcastEpisodePage(PodcastEpisode episode, string title)
+        public TheAssetPodcastEpisodePage(PodcastEpisode episode, string title)
         {
             InitializeComponent();
             BindingContext = new PodcastEpisodeViewModel(episode)
@@ -17,7 +17,8 @@ namespace LiarInChief.Views
                 Title = title
             };
         }
-        public PodcastEpisodePage()
+
+        public TheAssetPodcastEpisodePage()
         {
             InitializeComponent();
         }

@@ -21,6 +21,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\TrumpIncPodcastDetailsPage.xaml.cs">
+      <DependentUpon>TrumpIncPodcastDetailsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\TheAssetPodcastEpisodePage.xaml.cs">
+      <DependentUpon>TheAssetPodcastEpisodePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\TheAssetPodcastDetailsPage.xaml.cs">
+      <DependentUpon>TheAssetPodcastDetailsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Twitter\RealTwitterPage.xaml.cs">
       <DependentUpon>RealTwitterPage.xaml</DependentUpon>
     </Compile>
