@@ -24,7 +24,7 @@ namespace LiarInChief.ViewModels
             LoadEpisodesCommand = new Command(async () => await ExecuteLoadEpisodesCommand());
             Episodes = new ObservableRangeCollection<PodcastEpisode>();
             _theAsset = theAsset;
-            Podcast = theAsset ? DataService.GetTheAssetPodcast() : DataService.GetTrumpIncPodcast();
+            Podcast = theAsset ? DataService.GetTheAssetPodcast(false) : DataService.GetTrumpIncPodcast(false);
             AllEpisodes = new List<PodcastEpisode>();
         }
 

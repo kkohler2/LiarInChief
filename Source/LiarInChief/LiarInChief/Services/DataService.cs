@@ -26,15 +26,52 @@ namespace LiarInChief.Services
             client = new HttpClient();
         }
 
-        public Podcast GetTheAssetPodcast()
+        private string GetImageFile(XmlDocument xmlDocument)
         {
-            XmlDocument xmldoc = GetTheAssetXmlDocument();
+            string imageUrl = xmlDocument.SelectSingleNode("//rss/channel/image/url")?.InnerText;
+            FileInfo imageUrlInfo = new FileInfo(imageUrl);
+
+            string imageFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "theasset." + imageUrlInfo.Extension);
+            FileInfo imageFileInfo = new FileInfo(imageFile);
+            if (!File.Exists(imageFile))
+            {
+                WebClient client = new WebClient();
+                byte[] imageBuffer = null;
+                using (Stream data = client.OpenRead(imageUrl))
+                {
+                    using (BinaryReader reader = new BinaryReader(data))
+                    {
+                        const int bufferSize = 4096;
+                        using (var ms = new MemoryStream())
+                        {
+                            byte[] buffer = new byte[bufferSize];
+                            int count;
+                            while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
+                                ms.Write(buffer, 0, count);
+                            imageBuffer = ms.ToArray();
+                        }
+                    }
+                }
+                using (FileStream imageFileStream = new FileStream(imageFileInfo.FullName, FileMode.Create))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(imageFileStream))
+                    {
+                        writer.Write(imageBuffer);
+                    }
+                }
+            }
+            return new Uri(imageFile).AbsoluteUri.Replace("file://", "");
+        }
+
+        public Podcast GetTheAssetPodcast(bool forceRefresh)
+        {
+            XmlDocument xmldoc = GetTheAssetXmlDocument(forceRefresh);
 
             var xmlNode = xmldoc.SelectSingleNode("//rss/channel");
 
             Podcast podcast = new Podcast
             {
-                Art = xmldoc.SelectSingleNode("//rss/channel/image/url")?.InnerText,
+                Art = GetImageFile(xmldoc),
                 Category = GetValues(xmlNode, "itunes:category"),
                 Description = GetValue(xmlNode, "itunes:summary"),
                 FeedUrl = "https://rss.art19.com/the-asset",
@@ -75,15 +112,15 @@ namespace LiarInChief.Services
             return podcast;
         }
 
-        public Podcast GetTrumpIncPodcast()
+        public Podcast GetTrumpIncPodcast(bool forceRefresh)
         {
-            XmlDocument xmldoc = GetTrumpIncXmlDocument();
+            XmlDocument xmldoc = GetTrumpIncXmlDocument(forceRefresh);
 
             var xmlNode = xmldoc.SelectSingleNode("//rss/channel");
 
             Podcast podcast = new Podcast
             {
-                Art = xmldoc.SelectSingleNode("//rss/channel/image/url")?.InnerText,
+                Art = GetImageFile(xmldoc),
                 Category = GetValues(xmlNode, "itunes:category"),
                 Description = GetValue(xmlNode, "itunes:summary"),
                 FeedUrl = "https://feeds.feedburner.com/trumpinc",
@@ -128,16 +165,14 @@ namespace LiarInChief.Services
         {
             List<PodcastEpisode> podcastEpisodes = new List<PodcastEpisode>();
 
-            XmlDocument xmldoc = theAsset ? GetTheAssetXmlDocument() : GetTrumpIncXmlDocument();
-
-            string artworkUrl = xmldoc.SelectSingleNode("//rss/channel/image/url")?.InnerText;
+            XmlDocument xmldoc = theAsset ? GetTheAssetXmlDocument(forceRefresh) : GetTrumpIncXmlDocument(forceRefresh);
 
             XmlNodeList xmlNodeList = xmldoc.SelectNodes("//rss/channel/item");
             foreach (XmlNode xmlNode in xmlNodeList)
             {
                 PodcastEpisode podcastEpisode = new PodcastEpisode
                 {
-                    ArtworkUrl = artworkUrl,
+                    ArtworkUrl = podcast.Art,
                     Date = xmlNode.SelectSingleNode("pubDate")?.InnerText,
                     Description = GetValue(xmlNode, "itunes:summary"),
                     //DisplayDate - This is a property based on Date
@@ -223,75 +258,61 @@ namespace LiarInChief.Services
             return result["access_token"];
         }
 
-        private XmlDocument GetTheAssetXmlDocument()
+        private XmlDocument GetRSSDocument(bool forceRefresh, string file, string rssFeed)
+        {
+            string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), file);
+            FileInfo fileInfo = new FileInfo(fileName);
+            string rssFeedData = null;
+
+            if (forceRefresh || !fileInfo.Exists || (DateTime.Now - fileInfo.LastWriteTime) > new TimeSpan(24, 0, 0))
+            {
+                WebClient client = new WebClient();
+                using (Stream data = client.OpenRead(rssFeed))
+                {
+                    using (StreamReader reader = new StreamReader(data))
+                    {
+                        rssFeedData = reader.ReadToEnd();
+                    }
+                }
+                using (StreamWriter writer = new StreamWriter(fileInfo.FullName))
+                {
+                    writer.Write(rssFeedData);
+                }
+            }
+            else
+            {
+                using (FileStream fs = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read))
+                {
+                    using (TextReader reader = new StreamReader(fs))
+                    {
+                        rssFeedData = reader.ReadToEnd();
+                    }
+                }
+            }
+
+
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(rssFeedData);
+            return document;
+        }
+
+        private XmlDocument GetTheAssetXmlDocument(bool forceRefresh)
         {
             if (theAssetXmlDocument != null)
             {
                 return theAssetXmlDocument;
             }
-
-            //if (!File.Exists(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml"))
-            //{
-            WebClient client = new WebClient();
-            string rssFeedData = null;
-            using (Stream data = client.OpenRead("https://rss.art19.com/the-asset"))
-            {
-                using (StreamReader reader = new StreamReader(data))
-                {
-                    rssFeedData = reader.ReadToEnd();
-                }
-            }
-            //using (StreamWriter writer = new StreamWriter(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml"))
-            //{
-            //    writer.Write(s);
-            //}
-            //}
-            //string xml = null;
-            //using (FileStream fs = new FileStream(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml", FileMode.Open, FileAccess.Read))
-            //{
-            //    using (TextReader reader = new StreamReader(fs))
-            //    {
-            //        xml = reader.ReadToEnd();
-            //    }
-            //}
-            theAssetXmlDocument = new XmlDocument();
-            theAssetXmlDocument.LoadXml(rssFeedData);
+            theAssetXmlDocument = GetRSSDocument(forceRefresh, "theasset.xml", "https://rss.art19.com/the-asset");
             return theAssetXmlDocument;
         }
 
-        private XmlDocument GetTrumpIncXmlDocument()
+        private XmlDocument GetTrumpIncXmlDocument(bool forceRefresh)
         {
             if (trumpIncXmlDocument != null)
             {
                 return trumpIncXmlDocument;
             }
-
-            //if (!File.Exists(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml"))
-            //{
-            WebClient client = new WebClient();
-            string rssFeedData = null;
-            using (Stream data = client.OpenRead("https://feeds.feedburner.com/trumpinc"))
-            {
-                using (StreamReader reader = new StreamReader(data))
-                {
-                    rssFeedData = reader.ReadToEnd();
-                }
-            }
-            //using (StreamWriter writer = new StreamWriter(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml"))
-            //{
-            //    writer.Write(s);
-            //}
-            //}
-            //string xml = null;
-            //using (FileStream fs = new FileStream(@"D:\source\TheAssetRSS\TheAssetRSS\TheAsset.xml", FileMode.Open, FileAccess.Read))
-            //{
-            //    using (TextReader reader = new StreamReader(fs))
-            //    {
-            //        xml = reader.ReadToEnd();
-            //    }
-            //}
-            trumpIncXmlDocument = new XmlDocument();
-            trumpIncXmlDocument.LoadXml(rssFeedData);
+            trumpIncXmlDocument = GetRSSDocument(forceRefresh, "trumpinc.xml", "https://feeds.feedburner.com/trumpinc");
             return trumpIncXmlDocument;
         }
 
