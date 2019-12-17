@@ -21,7 +21,7 @@ namespace LiarInChief.ViewModels
         public PodcastDetailsBaseViewModel(bool theAsset)
         {
             SubscribeCommand = new Command(async () => await ExecuteSubscribeCommand());
-            LoadEpisodesCommand = new Command(async () => await ExecuteLoadEpisodesCommand());
+            LoadEpisodesCommand = new Command(async () => await ExecuteLoadEpisodesCommand(false));
             Episodes = new ObservableRangeCollection<PodcastEpisode>();
             _theAsset = theAsset;
             Podcast = theAsset ? DataService.GetTheAssetPodcast(false) : DataService.GetTrumpIncPodcast(false);
@@ -44,7 +44,7 @@ namespace LiarInChief.ViewModels
             await OpenBrowserAsync(service.Url);
         }
 
-        public async Task ExecuteLoadEpisodesCommand()
+        public async Task ExecuteLoadEpisodesCommand(bool forceRefresh)
         {
             if (IsBusy)
                 return;
@@ -55,7 +55,7 @@ namespace LiarInChief.ViewModels
 #if DEBUG
                 await Task.Delay(1000);
 #endif
-                var episodes = await DataService.GetPodcastEpisodesAsync(Podcast, _theAsset, false);
+                var episodes = await DataService.GetPodcastEpisodesAsync(Podcast, _theAsset, forceRefresh);
 
                 AllEpisodes.Clear();
                 Episodes.Clear();
@@ -85,5 +85,16 @@ namespace LiarInChief.ViewModels
             Episodes.AddRange(AllEpisodes.GetRange(Episodes.Count, toGet));
             CanLoadMore = Episodes.Count != AllEpisodes.Count;
         }
+
+        Command refreshCommand;
+        public Command RefreshCommand => refreshCommand ??
+                  (refreshCommand = new Command(async () =>
+                  {
+                      await ExecuteLoadEpisodesCommand(true);
+                  }, () =>
+                  {
+                      return !IsBusy;
+                  }));
+
     }
 }

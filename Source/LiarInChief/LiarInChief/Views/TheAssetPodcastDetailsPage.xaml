@@ -28,6 +28,9 @@
                     ItemTapped="ListView_ItemTapped"
                     ItemDisappearing="ListView_ItemDisappearing"
                     d:TranslationY="68"
+                    IsPullToRefreshEnabled="True"
+                    IsRefreshing="{Binding IsBusy, Mode=OneWay}"
+                    RefreshCommand="{Binding RefreshCommand}"
                     ItemsSource="{Binding Episodes}">
                 <d:ListView.ItemsSource>
                     <x:Array Type="{x:Type models:PodcastEpisode}">

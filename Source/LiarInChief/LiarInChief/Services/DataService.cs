@@ -298,7 +298,7 @@ namespace LiarInChief.Services
 
         private XmlDocument GetTheAssetXmlDocument(bool forceRefresh)
         {
-            if (theAssetXmlDocument != null)
+            if (!forceRefresh && theAssetXmlDocument != null)
             {
                 return theAssetXmlDocument;
             }
@@ -308,7 +308,7 @@ namespace LiarInChief.Services
 
         private XmlDocument GetTrumpIncXmlDocument(bool forceRefresh)
         {
-            if (trumpIncXmlDocument != null)
+            if (!forceRefresh && trumpIncXmlDocument != null)
             {
                 return trumpIncXmlDocument;
             }
