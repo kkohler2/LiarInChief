@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LiarInChief.Interfaces;
+using LiarInChief.Models;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,11 +8,10 @@ using System.Json;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using LiarInChief.Interfaces;
-using LiarInChief.Models;
 using Xamarin.Essentials;
 
 namespace LiarInChief.Services
@@ -24,6 +25,139 @@ namespace LiarInChief.Services
         public DataService()
         {
             client = new HttpClient();
+        }
+
+        public string GetBackgroundImage()
+        {
+            WebClient client = new WebClient();
+            string indexFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ImageIndex.txt");
+            string fileUrl = "https://raw.githubusercontent.com/kkohler2/LiarInChief/master/Source/LiarInChief/LiarInChief/ImageIndex.txt";
+            if (!File.Exists(indexFile))
+            {
+                try
+                {
+                    using (Stream stream = client.OpenRead(fileUrl))
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            string data = reader.ReadToEnd();
+                            using (StreamWriter writer = new StreamWriter(indexFile))
+                            {
+                                writer.Write(data);
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            List<string> files = new List<string>();
+            if (!File.Exists(indexFile))
+            {
+                indexFile = "ImageIndex.txt";
+                // Get Assembly
+                var assembly = Assembly.GetExecutingAssembly();
+
+                // Get Resources
+                var resources = assembly.GetManifestResourceNames();
+
+                // Get File Path from FileName
+                string filePath = resources?.Single(resource => resource.EndsWith(indexFile, StringComparison.Ordinal));
+
+                using (var stream = assembly.GetManifestResourceStream(filePath))
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        string l;
+                        while ((l = reader.ReadLine()) != null)
+                        {
+                            if (!string.IsNullOrEmpty(l))
+                            {
+                                files.Add(l);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            { 
+                using (StreamReader reader = new StreamReader(indexFile))
+                {
+                    string l;
+                    while ((l = reader.ReadLine()) != null)
+                    {
+                        if (!string.IsNullOrEmpty(l))
+                        {
+                            files.Add(l);
+                        }
+                    }
+                }
+            }
+
+            Random random = new Random((int)DateTime.Now.Ticks);
+            string imageUrl = files[random.Next(0, files.Count - 1)];
+            string format = string.Empty;
+            string imageFile = imageUrl;
+
+            if (imageUrl.IndexOf(":") != -1)
+            {
+                int pos = imageUrl.LastIndexOf("/");
+                if (pos != -1)
+                {
+                    imageFile = imageFile.Substring(pos + 1);
+                    pos = imageFile.LastIndexOf("?");
+                    if (pos != -1)
+                    {
+                        int pos2 = imageFile.IndexOf("format=");
+                        if (pos2 != -1)
+                        {
+                            format = imageFile.Substring(pos2 + 7);
+                            pos2 = format.IndexOf("&");
+                            if (pos2 != -1)
+                            {
+                                format = format.Substring(0, pos2);
+                            }
+
+                        }
+                        imageFile = imageFile.Substring(0, pos);
+                        if (!string.IsNullOrWhiteSpace(format))
+                        {
+                            imageFile = $"{imageFile}.{format}";
+                        }
+                    }
+                }
+                string image = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), imageFile);
+                imageFile = image;
+                if (!File.Exists(image))
+                {
+                    byte[] imageBuffer = null;
+                    using (Stream data = client.OpenRead(imageUrl))
+                    {
+                        using (BinaryReader reader = new BinaryReader(data))
+                        {
+                            const int bufferSize = 4096;
+                            using (var ms = new MemoryStream())
+                            {
+                                byte[] buffer = new byte[bufferSize];
+                                int count;
+                                while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
+                                    ms.Write(buffer, 0, count);
+                                imageBuffer = ms.ToArray();
+                            }
+                        }
+                    }
+                    using (FileStream imageFileStream = new FileStream(image, FileMode.Create))
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(imageFileStream))
+                        {
+                            writer.Write(imageBuffer);
+                        }
+                    }
+                }
+            }
+            return imageFile;
         }
 
         private string GetImageFile(XmlDocument xmlDocument)

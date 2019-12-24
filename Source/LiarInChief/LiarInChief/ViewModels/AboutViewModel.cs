@@ -33,8 +33,15 @@ namespace LiarInChief.ViewModels
                     Url = "https://www.wnycstudios.org/podcasts/trumpinc"
                 }
             };
+            string img = DataService.GetBackgroundImage();
+            Height = img == "trump_truck.png" ? 200 : 600;
+            Image = img;
         }
 
         public ICommand OpenWebCommand { get; }
+
+        public string Summary { get; set; } = "My name is Donald J. Trump. I am a liar, cheater, failed businessman and a corrupt President of the United States. I've been banned from running charities.  I have stiffed countless contractors for work.  I hire foreigners over Americans to work at my properties and I have the distinct honor of being the third president of the United States to be impeached. So much winning!";
+        public string Image { get; set; } = "trump_truck.png";
+        public int Height { get; set; }
     }
 }

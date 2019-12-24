@@ -22,24 +22,28 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <StackLayout
+    <Grid>
+        <Image Grid.Row="0" Grid.RowSpan="3"
+            Margin="-10,-10,-10,0"
+            VerticalOptions="Start"
+            Aspect="AspectFit"
+            HeightRequest="{Binding Height}"
+            Source= "{Binding Image}"/>
+        <Label Grid.Row="3" Grid.RowSpan="2"
+            Margin="16,0,16,0"
+            LineBreakMode="WordWrap"
+            FontSize="Body"
+            VerticalOptions="EndAndExpand"
+            TextColor="Black"
+            Text="{Binding Summary}"/>
+        <StackLayout Grid.Row="5"
             Padding="10"
             Orientation="Vertical"
             Spacing="10">
-            <Image
-                Margin="-10,-10,-10,0"
-                Aspect="AspectFill"
-                HeightRequest="200"
-                Source="trump_truck.png" />
-            <Label
-                Margin="0,16"
-                LineBreakMode="WordWrap"
-                FontSize="Body"
-                Text="My name is Donald J. Trump. I'm a liar, cheater, failed businessman and a corrupt President of the United States. I've been banned from running charities.  I have stiffed countless contractors for work.  I hire foreigners over Americans to work at my properties and I'm under investigation for possible Impeachment." />
             <StackLayout
                 BindableLayout.ItemsSource="{Binding SocialItems}"
                 HorizontalOptions="CenterAndExpand"
+                VerticalOptions="Center"
                 Orientation="Horizontal"
                 Spacing="5">
                 <BindableLayout.ItemTemplate>
@@ -52,5 +56,5 @@
                 </BindableLayout.ItemTemplate>
             </StackLayout>
         </StackLayout>
-    </ScrollView>    
+    </Grid>
 </ContentPage>
