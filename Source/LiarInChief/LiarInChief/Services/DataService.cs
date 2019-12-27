@@ -27,12 +27,13 @@ namespace LiarInChief.Services
             client = new HttpClient();
         }
 
-        public string GetBackgroundImage()
+        public string GetBackgroundImage(bool forceRefresh)
         {
             WebClient client = new WebClient();
             string indexFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ImageIndex.txt");
             string fileUrl = "https://raw.githubusercontent.com/kkohler2/LiarInChief/master/Source/LiarInChief/LiarInChief/ImageIndex.txt";
-            if (!File.Exists(indexFile))
+            FileInfo fileInfo = new FileInfo(indexFile);
+            if (!fileInfo.Exists || (forceRefresh && (DateTime.Now - fileInfo.LastWriteTime) > new TimeSpan(24, 0, 0)))
             {
                 try
                 {

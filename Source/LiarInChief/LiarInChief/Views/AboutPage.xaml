@@ -22,39 +22,44 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid>
-        <Image Grid.Row="0" Grid.RowSpan="3"
-            Margin="-10,-10,-10,0"
-            VerticalOptions="Start"
-            Aspect="AspectFit"
-            HeightRequest="{Binding Height}"
-            Source= "{Binding Image}"/>
-        <Label Grid.Row="3" Grid.RowSpan="2"
-            Margin="16,0,16,0"
-            LineBreakMode="WordWrap"
-            FontSize="Body"
-            VerticalOptions="EndAndExpand"
-            TextColor="Black"
-            Text="{Binding Summary}"/>
-        <StackLayout Grid.Row="5"
-            Padding="10"
-            Orientation="Vertical"
-            Spacing="10">
-            <StackLayout
-                BindableLayout.ItemsSource="{Binding SocialItems}"
-                HorizontalOptions="CenterAndExpand"
-                VerticalOptions="Center"
-                Orientation="Horizontal"
-                Spacing="5">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="models:SocialItem">
-                        <Button
-                            Command="{Binding OpenUrlCommand}"
-                            Style="{StaticResource MaterialButton}"
-                            Text="{Binding Icon}" />
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </StackLayout>
-        </StackLayout>
-    </Grid>
+    <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                 Command="{Binding RefreshCommand}">
+        <ScrollView>
+            <Grid>
+                <Image Grid.Row="0" Grid.RowSpan="3"
+                    Margin="-10,0,-10,0"
+                    VerticalOptions="Start"
+                    Aspect="AspectFit"
+                    HeightRequest="{Binding Height}"
+                    Source="{Binding Image}"/>
+                <Label Grid.Row="3" Grid.RowSpan="2"
+                    Margin="16,0,16,0"
+                    LineBreakMode="WordWrap"
+                    FontSize="Body"
+                    VerticalOptions="EndAndExpand"
+                    TextColor="Black"
+                    Text="{Binding Summary}"/>
+                <StackLayout Grid.Row="5"
+                    Padding="10"
+                    Orientation="Vertical"
+                    Spacing="10">
+                    <StackLayout
+                        BindableLayout.ItemsSource="{Binding SocialItems}"
+                        HorizontalOptions="CenterAndExpand"
+                        VerticalOptions="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:SocialItem">
+                                <Button
+                                Command="{Binding OpenUrlCommand}"
+                                Style="{StaticResource MaterialButton}"
+                                Text="{Binding Icon}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+        </ScrollView>
+    </RefreshView>
 </ContentPage>
