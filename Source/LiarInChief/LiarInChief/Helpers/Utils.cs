@@ -11,8 +11,11 @@ namespace LiarInChief.Helpers
     public static class DateTimeUtils
     {
         // Twitter: 10:56 AM · Mar 7, 2019
-        public static string TwitterHumanize(this DateTime date) => 
-            date.Date == DateTime.Today.Date ? date.Humanize() : date.TwitterDateTime();
+        public static string TwitterHumanize(this DateTime date)
+        {
+            DateTime localTime = date.ToLocalTime();
+            return localTime.Date == DateTime.Today.Date ? localTime.Humanize(false) : localTime.TwitterDateTime();
+        }
 
         public static string TwitterDateTime(this DateTime date, CultureInfo culture = null)
         {
