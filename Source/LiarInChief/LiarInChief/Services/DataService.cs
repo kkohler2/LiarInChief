@@ -29,7 +29,7 @@ namespace LiarInChief.Services
 
         public async Task<string> GetBackgroundImage(bool forceRefresh)
         {
-            WebClient client = new WebClient();
+            HttpClient client = new HttpClient();
             string indexFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ImageIndex.txt");
             string fileUrl = "https://raw.githubusercontent.com/kkohler2/LiarInChief/master/Source/LiarInChief/LiarInChief/ImageIndex.txt";
             FileInfo fileInfo = new FileInfo(indexFile);
@@ -37,16 +37,10 @@ namespace LiarInChief.Services
             {
                 try
                 {
-                    using (Stream stream = client.OpenRead(fileUrl))
+                    string data = await client.GetStringAsync(fileUrl);
+                    using (StreamWriter writer = new StreamWriter(indexFile))
                     {
-                        using (StreamReader reader = new StreamReader(stream))
-                        {
-                            string data = await reader.ReadToEndAsync();
-                            using (StreamWriter writer = new StreamWriter(indexFile))
-                            {
-                                await writer.WriteAsync(data);
-                            }
-                        }
+                        await writer.WriteAsync(data);
                     }
                 }
                 catch (Exception)
@@ -133,29 +127,8 @@ namespace LiarInChief.Services
                 imageFile = image;
                 if (!File.Exists(image))
                 {
-                    byte[] imageBuffer = null;
-                    using (Stream data = client.OpenRead(imageUrl))
-                    {
-                        using (BinaryReader reader = new BinaryReader(data))
-                        {
-                            const int bufferSize = 4096;
-                            using (var ms = new MemoryStream())
-                            {
-                                byte[] buffer = new byte[bufferSize];
-                                int count;
-                                while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
-                                    ms.Write(buffer, 0, count);
-                                imageBuffer = ms.ToArray();
-                            }
-                        }
-                    }
-                    using (FileStream imageFileStream = new FileStream(image, FileMode.Create))
-                    {
-                        using (BinaryWriter writer = new BinaryWriter(imageFileStream))
-                        {
-                            writer.Write(imageBuffer);
-                        }
-                    }
+                    WebClient webClient = new WebClient();
+                    webClient.DownloadFile(imageUrl, image);
                 }
             }
             return imageFile;
@@ -170,30 +143,8 @@ namespace LiarInChief.Services
             FileInfo imageFileInfo = new FileInfo(imageFile);
             if (!File.Exists(imageFile))
             {
-                WebClient client = new WebClient();
-                byte[] imageBuffer = null;
-                using (Stream data = client.OpenRead(imageUrl))
-                {
-                    using (BinaryReader reader = new BinaryReader(data))
-                    {
-                        const int bufferSize = 4096;
-                        using (var ms = new MemoryStream())
-                        {
-                            byte[] buffer = new byte[bufferSize];
-                            int count;
-                            while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
-                                ms.Write(buffer, 0, count);
-                            imageBuffer = ms.ToArray();
-                        }
-                    }
-                }
-                using (FileStream imageFileStream = new FileStream(imageFileInfo.FullName, FileMode.Create))
-                {
-                    using (BinaryWriter writer = new BinaryWriter(imageFileStream))
-                    {
-                        writer.Write(imageBuffer);
-                    }
-                }
+                WebClient webClient = new WebClient();
+                webClient.DownloadFile(imageUrl, imageFile);
             }
             return new Uri(imageFile).AbsoluteUri.Replace("file://", "");
         }
@@ -401,8 +352,8 @@ namespace LiarInChief.Services
 
             if (forceRefresh || !fileInfo.Exists || (DateTime.Now - fileInfo.LastWriteTime) > new TimeSpan(24, 0, 0))
             {
-                WebClient client = new WebClient();
-                rssFeedData = await client.DownloadStringTaskAsync(rssFeed);
+                HttpClient client = new HttpClient();
+                rssFeedData = await client.GetStringAsync(rssFeed);
                 using (StreamWriter writer = new StreamWriter(fileInfo.FullName))
                 {
                     await writer.WriteAsync(rssFeedData);
