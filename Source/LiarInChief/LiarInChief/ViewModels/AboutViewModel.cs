@@ -1,6 +1,7 @@
 ﻿using LiarInChief.Helpers;
 using LiarInChief.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -34,12 +35,12 @@ namespace LiarInChief.ViewModels
                     Url = "https://www.wnycstudios.org/podcasts/trumpinc"
                 }
             };
-            SetBackgroundImage(false);
+            SetBackgroundImage(false); // Intentionally not waiting for method to finish!
         }
 
-        private void SetBackgroundImage(bool forceRefresh)
+        private async Task SetBackgroundImage(bool forceRefresh)
         {
-            string img = DataService.GetBackgroundImage(forceRefresh);
+            string img = await DataService.GetBackgroundImage(forceRefresh);
             Height = img == "trump_truck.png" ? 200 : 600;
             Image = img;
         }
@@ -56,7 +57,7 @@ namespace LiarInChief.ViewModels
             }
         }
 
-        public ICommand RefreshCommand => new Command(() => RefreshItemsAsync());
+        public ICommand RefreshCommand => new Command(async () => await RefreshItemsAsync());
 
         public ICommand OpenWebCommand { get; }
 
@@ -82,10 +83,10 @@ namespace LiarInChief.ViewModels
             }
         }
 
-        void RefreshItemsAsync()
+        async Task RefreshItemsAsync()
         {
             IsRefreshing = true;
-            SetBackgroundImage(true);
+            await SetBackgroundImage(true);
             IsRefreshing = false;
         }
     }

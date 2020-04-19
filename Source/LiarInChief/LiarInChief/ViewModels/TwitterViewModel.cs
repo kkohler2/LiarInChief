@@ -1,5 +1,6 @@
 ﻿using LiarInChief.Models;
 using MvvmHelpers;
+using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -66,7 +67,7 @@ namespace LiarInChief.ViewModels
                     Tweets.ReplaceRange(items);
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 await DisplayAlert("Error", "Unable to load tweets.", "OK");
             }

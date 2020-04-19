@@ -27,7 +27,7 @@ namespace LiarInChief.Services
             client = new HttpClient();
         }
 
-        public string GetBackgroundImage(bool forceRefresh)
+        public async Task<string> GetBackgroundImage(bool forceRefresh)
         {
             WebClient client = new WebClient();
             string indexFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ImageIndex.txt");
@@ -41,10 +41,10 @@ namespace LiarInChief.Services
                     {
                         using (StreamReader reader = new StreamReader(stream))
                         {
-                            string data = reader.ReadToEnd();
+                            string data = await reader.ReadToEndAsync();
                             using (StreamWriter writer = new StreamWriter(indexFile))
                             {
-                                writer.Write(data);
+                                await writer.WriteAsync(data);
                             }
                         }
                     }
@@ -72,7 +72,7 @@ namespace LiarInChief.Services
                     using (StreamReader reader = new StreamReader(stream))
                     {
                         string l;
-                        while ((l = reader.ReadLine()) != null)
+                        while ((l = await reader.ReadLineAsync()) != null)
                         {
                             if (!string.IsNullOrEmpty(l))
                             {
@@ -87,7 +87,7 @@ namespace LiarInChief.Services
                 using (StreamReader reader = new StreamReader(indexFile))
                 {
                     string l;
-                    while ((l = reader.ReadLine()) != null)
+                    while ((l = await reader.ReadLineAsync()) != null)
                     {
                         if (!string.IsNullOrEmpty(l))
                         {
@@ -198,15 +198,15 @@ namespace LiarInChief.Services
             return new Uri(imageFile).AbsoluteUri.Replace("file://", "");
         }
 
-        public Podcast GetTheAssetPodcast(bool forceRefresh)
+        public async Task<Podcast> GetTheAssetPodcast(bool forceRefresh)
         {
-            XmlDocument xmldoc = GetTheAssetXmlDocument(forceRefresh);
+            XmlDocument xmldoc = await GetTheAssetXmlDocument(forceRefresh);
 
             var xmlNode = xmldoc.SelectSingleNode("//rss/channel");
 
             Podcast podcast = new Podcast
             {
-                Art = GetImageFile(xmldoc),
+                //.Art = GetImageFile(xmldoc),
                 Category = GetValues(xmlNode, "itunes:category"),
                 Description = GetValue(xmlNode, "itunes:summary"),
                 FeedUrl = "https://rss.art19.com/the-asset",
@@ -244,12 +244,13 @@ namespace LiarInChief.Services
                 TwitterUrl = null,
                 WebsiteUrl = "https://theassetpodcast.org/"
             };
+            podcast.Art = GetImageFile(xmldoc);
             return podcast;
         }
 
-        public Podcast GetTrumpIncPodcast(bool forceRefresh)
+        public async Task<Podcast> GetTrumpIncPodcast(bool forceRefresh)
         {
-            XmlDocument xmldoc = GetTrumpIncXmlDocument(forceRefresh);
+            XmlDocument xmldoc = await GetTrumpIncXmlDocument(forceRefresh);
 
             var xmlNode = xmldoc.SelectSingleNode("//rss/channel");
 
@@ -296,12 +297,11 @@ namespace LiarInChief.Services
             return podcast;
         }
 
-        public Task<List<PodcastEpisode>> GetPodcastEpisodesAsync(Podcast podcast, bool theAsset, bool forceRefresh)
+        public async Task<List<PodcastEpisode>> GetPodcastEpisodesAsync(Podcast podcast, bool theAsset, bool forceRefresh)
         {
             List<PodcastEpisode> podcastEpisodes = new List<PodcastEpisode>();
 
-            XmlDocument xmldoc = theAsset ? GetTheAssetXmlDocument(forceRefresh) : GetTrumpIncXmlDocument(forceRefresh);
-
+            XmlDocument xmldoc = await (theAsset ? GetTheAssetXmlDocument(forceRefresh) : GetTrumpIncXmlDocument(forceRefresh));
             XmlNodeList xmlNodeList = xmldoc.SelectNodes("//rss/channel/item");
             foreach (XmlNode xmlNode in xmlNodeList)
             {
@@ -329,7 +329,7 @@ namespace LiarInChief.Services
                 }
                 podcastEpisodes.Add(podcastEpisode);
             }
-            return Task.FromResult(podcastEpisodes);
+            return podcastEpisodes;
         }
 
         public async Task<IEnumerable<Tweet>> GetTweetsAsync(string screenName)
@@ -393,7 +393,7 @@ namespace LiarInChief.Services
             return result["access_token"];
         }
 
-        private XmlDocument GetRSSDocument(bool forceRefresh, string file, string rssFeed)
+        private async Task<XmlDocument> GetRSSDocument(bool forceRefresh, string file, string rssFeed)
         {
             string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), file);
             FileInfo fileInfo = new FileInfo(fileName);
@@ -402,16 +402,10 @@ namespace LiarInChief.Services
             if (forceRefresh || !fileInfo.Exists || (DateTime.Now - fileInfo.LastWriteTime) > new TimeSpan(24, 0, 0))
             {
                 WebClient client = new WebClient();
-                using (Stream data = client.OpenRead(rssFeed))
-                {
-                    using (StreamReader reader = new StreamReader(data))
-                    {
-                        rssFeedData = reader.ReadToEnd();
-                    }
-                }
+                rssFeedData = await client.DownloadStringTaskAsync(rssFeed);
                 using (StreamWriter writer = new StreamWriter(fileInfo.FullName))
                 {
-                    writer.Write(rssFeedData);
+                    await writer.WriteAsync(rssFeedData);
                 }
             }
             else
@@ -420,7 +414,7 @@ namespace LiarInChief.Services
                 {
                     using (TextReader reader = new StreamReader(fs))
                     {
-                        rssFeedData = reader.ReadToEnd();
+                        rssFeedData = await reader.ReadToEndAsync();
                     }
                 }
             }
@@ -431,23 +425,23 @@ namespace LiarInChief.Services
             return document;
         }
 
-        private XmlDocument GetTheAssetXmlDocument(bool forceRefresh)
+        private async Task<XmlDocument> GetTheAssetXmlDocument(bool forceRefresh)
         {
             if (!forceRefresh && theAssetXmlDocument != null)
             {
                 return theAssetXmlDocument;
             }
-            theAssetXmlDocument = GetRSSDocument(forceRefresh, "theasset.xml", "https://rss.art19.com/the-asset");
+            theAssetXmlDocument = await GetRSSDocument(forceRefresh, "theasset.xml", "https://rss.art19.com/the-asset");
             return theAssetXmlDocument;
         }
 
-        private XmlDocument GetTrumpIncXmlDocument(bool forceRefresh)
+        private async Task<XmlDocument> GetTrumpIncXmlDocument(bool forceRefresh)
         {
             if (!forceRefresh && trumpIncXmlDocument != null)
             {
                 return trumpIncXmlDocument;
             }
-            trumpIncXmlDocument = GetRSSDocument(forceRefresh, "trumpinc.xml", "https://feeds.feedburner.com/trumpinc");
+            trumpIncXmlDocument = await GetRSSDocument(forceRefresh, "trumpinc.xml", "https://feeds.feedburner.com/trumpinc");
             return trumpIncXmlDocument;
         }
 

@@ -1,9 +1,10 @@
 ﻿using System;
 using LiarInChief.Helpers;
+using MvvmHelpers;
 
 namespace LiarInChief.Models
 {
-    public class PodcastEpisode
+    public class PodcastEpisode : ObservableObject
     {
         public string Id { get; set; }
 
@@ -15,8 +16,12 @@ namespace LiarInChief.Models
 
         public string Mp3Url { get; set; }
 
-        public string ArtworkUrl { get; set; }
-
+        private string _artworkUrl;
+        public string ArtworkUrl
+        {
+            get { return _artworkUrl; }
+            set { SetProperty(ref _artworkUrl, value); }
+        }
         public string Duration { get; set; }
 
         public string Explicit { get; set; }

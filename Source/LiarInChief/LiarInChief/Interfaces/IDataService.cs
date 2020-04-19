@@ -6,9 +6,9 @@ namespace LiarInChief.Interfaces
 {
     public interface IDataService
     {
-        string GetBackgroundImage(bool forceRefresh);
-        Podcast GetTheAssetPodcast(bool forceRefresh);
-        Podcast GetTrumpIncPodcast(bool forceRefresh);
+        Task<string> GetBackgroundImage(bool forceRefresh);
+        Task<Podcast> GetTheAssetPodcast(bool forceRefresh);
+        Task<Podcast> GetTrumpIncPodcast(bool forceRefresh);
         Task<List<PodcastEpisode>> GetPodcastEpisodesAsync(Podcast podcast, bool theAsset, bool forceRefresh);
         Task<IEnumerable<Tweet>> GetTweetsAsync(string screenName);
     }

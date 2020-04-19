@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using LiarInChief.Models;
@@ -17,6 +20,7 @@ namespace LiarInChief.ViewModels
         public List<PodcastEpisode> AllEpisodes { get; set; }
         public ObservableRangeCollection<PodcastEpisode> Episodes { get; set; }
         private readonly bool _theAsset;
+        private Timer _timer;
 
         public PodcastDetailsBaseViewModel(bool theAsset)
         {
@@ -24,8 +28,22 @@ namespace LiarInChief.ViewModels
             LoadEpisodesCommand = new Command(async () => await ExecuteLoadEpisodesCommand(false));
             Episodes = new ObservableRangeCollection<PodcastEpisode>();
             _theAsset = theAsset;
-            Podcast = theAsset ? DataService.GetTheAssetPodcast(false) : DataService.GetTrumpIncPodcast(false);
+            _timer = new Timer(LoadPodcast, null, 50, 5000);
             AllEpisodes = new List<PodcastEpisode>();
+        }
+
+        public async void LoadPodcast(Object stateInfo)
+        {
+            _timer.Dispose();
+            _timer = null;
+            try
+            {
+                Podcast = await (_theAsset ? DataService.GetTheAssetPodcast(false) : DataService.GetTrumpIncPodcast(false));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public async Task ExecuteSubscribeCommand()
