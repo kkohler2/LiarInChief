@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 using Xamarin.Essentials;
 
@@ -350,7 +351,7 @@ namespace LiarInChief.Services
             {
                 StatusID = t?.RetweetedStatus?.User?.ScreenName == screenName ? t.RetweetedStatus.IdStr : t.IdStr,
                 ScreenName = t?.RetweetedStatus?.User?.ScreenName ?? t.User.ScreenName,
-                Text = t?.Text,
+                Text = HttpUtility.HtmlDecode(t?.Text),
                 RetweetCount = t.RetweetCount,
                 FavoriteCount = t.FavoriteCount,
                 CreatedAt = GetDate(t.CreatedAt, DateTime.MinValue),
